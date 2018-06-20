@@ -1,0 +1,45 @@
+spring:
+  profiles:
+    active: dev
+
+
+
+---
+spring:
+  profiles: dev
+
+debug: true # debug 模式，控制台显示自动配置类是否生效的报告
+server:
+  port: 8080
+  servlet:
+    context-path: /hello
+
+
+
+---
+spring:
+  profiles: test
+
+server:
+  port: 8088
+
+person:
+  user-name: 檀美英
+  sex: true
+  age: ${random.int(30)}
+  birthday: 1990/12/07
+  address:
+    province: anhui
+    city: chizhou
+  map: {key1: val1, key2: val2}
+  list: [1, 2, 3]
+
+
+
+---
+spring:
+  profiles: product
+
+server:
+  port: 8089
+

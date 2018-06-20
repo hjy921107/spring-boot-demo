@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    scan：当此属性设置为true时，配置文件如果发生改变，将会被重新加载，默认值为true。
+    scanPeriod：设置监测配置文件是否有修改的时间间隔，默认单位是毫秒，当scan为true时，此属性生效。默认的时间间隔为1分钟。
+    debug：当此属性设置为true时，将打印出logback内部日志信息，实时查看logback运行状态。默认值为false。
+-->
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!-- 定义日志的根目录 -->
+    <property name="LOG_HOME" value="./logs" />
+    <!-- 定义日志文件名称 -->
+    <property name="appName" value="jyhuang-springboot"></property>
+
+    <!-- ch.qos.logback.core.ConsoleAppender 表示控制台输出 -->
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <!--
+            日志输出格式：
+                %d表示日期时间，
+                %thread表示线程名，
+                %-5level：级别从左显示5个字符宽度
+                %logger{50} 表示logger名字最长50个字符，否则按照句点分割。
+                %msg：日志消息，
+                %n是换行符
+        -->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <springProfile name="product"> <!-- 当使用 product profile 时生效 -->
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            </springProfile>
+            <springProfile name="!product">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            </springProfile>
+        </layout>
+    </appender>
+
+    <!-- 滚动记录文件，先将日志记录到指定文件，当符合某个条件时，将日志记录到其他文件 -->  
+    <appender name="rollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 指定日志文件的名称 -->
+        <file>${LOG_HOME}/${appName}.log</file>
+        <!--
+        当发生滚动时，决定 RollingFileAppender 的行为，涉及文件移动和重命名
+        TimeBasedRollingPolicy： 最常用的滚动策略，它根据时间来制定滚动策略，既负责滚动也负责触发滚动。
+        -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--
+                滚动时产生的文件的存放位置及文件名称 %d{yyyy-MM-dd}：按天进行日志滚动
+                %i：当文件大小超过 maxFileSize 时，按照 i 进行文件滚动
+            -->
+            <fileNamePattern>${LOG_HOME}/${appName}-%d{yyyy-MM-dd}-%i.log</fileNamePattern>
+            <!-- 当日志文件超过maxFileSize指定的大小是，根据上面提到的 %i 进行日志文件滚动 -->
+            <maxFileSize>50MB</maxFileSize>
+            <!--
+                可选节点，控制保留的归档文件的最大数量，超出数量就删除旧文件。假设设置每天滚动，
+                且maxHistory是365，则只保存最近365天的文件，删除之前的旧文件。
+                注意，删除旧文件是，那些为了归档而创建的目录也会被删除。
+            -->
+            <MaxHistory>365</MaxHistory>
+            <!-- 所有日志文件的最大为 20G，超过后，删除旧文件 -->
+            <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy>
+
+        <!-- 日志输出格式： -->     
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <springProfile name="product">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [ %thread ] - [ %-5level ] [ %logger{50} : %line ] - %msg%n</pattern>
+            </springProfile>
+            <springProfile name="!product">
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [ %thread ] - [ %-5level ] [ %logger{50} : %line ] - %msg%n</pattern>
+            </springProfile>
+        </layout>
+    </appender>
+
+    <!-- 
+		logger 主要用于存放日志对象，也可以定义日志类型、级别
+		name：表示匹配的logger类型前缀，也就是包的前半部分
+		level：要记录的日志级别，包括 TRACE < DEBUG < INFO < WARN < ERROR
+		additivity：作用在于 logger 是否使用 root 配置的 appender 进行输出
+		    false：表示只用当前 logger 自己配置的 appender-ref，没有则不输出
+		    true：表示当前 logger 的 appender-ref 和 root 的appender-ref 都有效，默认为 true
+    -->
+    <!-- hibernate logger -->
+    <logger name="org.hibernate" level="debug" />
+    <!-- Spring framework logger -->
+    <logger name="org.springframework" level="info" additivity="true">
+        <!--<appender-ref>可以定义自己的输出源</appender-ref>-->
+    </logger>
+
+    <!-- 
+        root 与 logger 是父子关系，如果没有特别定义 logger，则默认为 root
+        任何一个类只会和一个 logger 对应，要么是定义的 logger，要么是 root，
+        判断的关键在于找到这个 logger，然后判断这个 logger 的 appender 和 level。
+    -->
+    <root level="info">
+        <appender-ref ref="stdout" />
+        <appender-ref ref="rollingFileAppender" />
+    </root>
+
+    <!--
+        logback的配置，需要配置输出源 appender，打日志的 logger（子节点）和 root（根节点）
+        实际上，它输出日志是从子节点开始，子节点如果有输出源（appender-ref）直接输入，
+        如果无，判断配置的 addtivity 判断，是否向上级传递，即是否向 root 传递，
+        传递则采用 root 的输出源（appender-ref），否则不输出日志。
+    -->
+</configuration> 

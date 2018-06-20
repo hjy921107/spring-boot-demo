@@ -1,0 +1,12 @@
+spring:
+  profiles:
+    active: dev
+
+---
+spring:
+  profiles: dev
+logging:
+  level:
+    com.jyhuang: trace
+#  path:
+#  file:
