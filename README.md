@@ -30,6 +30,8 @@
 
 ### 1.6 如何在 SpringBoot 项目中使用拦截器
 
+### 1.7 在 SpringBoot 项目中发送邮件
+
 ### 1.12 SpringBoot 使用 LogBack 作为日志组件
 
 ### 1.13 SpringBoot 实战 SpringDataJPA
